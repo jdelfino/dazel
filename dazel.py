@@ -144,10 +144,11 @@ class DockerInstance:
 
     def send_command(self, args):
         term_size = shutil.get_terminal_size()
-        command = "%s exec -i -e COLUMNS=%s -e LINES=%s -e TERM=%s %s %s %s %s %s %s %s %s" % (
+        command = "%s exec -i -e COLUMNS=%s -e LINES=%s -e TERM=%s %s %s %s %s %s %s %s %s %s" % (
             self.docker_command,
             term_size.columns, term_size.lines,
             os.environ.get("TERM", ""),
+            self.env_vars,
             "-t" if sys.stdout.isatty() else "",
             "--privileged" if self.docker_run_privileged else "",
             ("--user=%s" % self.user
@@ -516,7 +517,6 @@ class DockerInstance:
         directory = cls._find_workspace_directory()
         local_dazelrc_path = os.path.join(directory, DAZEL_RC_FILE)
         dazelrc_path = os.environ.get("DAZEL_RC_FILE", local_dazelrc_path)
-
         if not os.path.exists(dazelrc_path):
             return { "DAZEL_DIRECTORY": os.environ.get("DAZEL_DIRECTORY", directory) }
 
