@@ -6,11 +6,22 @@ import subprocess
 import sys
 import collections
 
-# IMPORTANT: These values must stay in sync with stack.yml
+### IMPORTANT: These next values must be used in the docker compose file.
+
+# A better way to do this would be for this script to set environment variables with these values
+# when running docker-compose, and then use envvar substitution in docker-compose.yml
+# (https://docs.docker.com/compose/environment-variables/). For now, this is left as an exercise for
+# the reader.
+
+# The container mount point for the repo being built. The build container must mount to this location.
 CODE_MOUNT_POINT = "/code"
-CONTAINER_OUTPUT_USER_ROOT = "/var/bazel/workspace/_bazel_dazel"
+# The container's output base. The container must mount `external`, `execroot`, and `action_cache`
+# under this directory.
 CONTAINER_OUTPUT_BASE = "/root/.cache/bazel/_bazel_dazel"
+# The docker-compose file must set the `container_name` for the bazel container to this value.
 BUILD_CONTAINER_NAME = "dazel_build"
+
+### End shared constants
 
 
 DAZEL_RC_FILENAME = ".dazelrc"
@@ -21,6 +32,7 @@ DOCKER_COMPOSE_COMMAND = "docker-compose"
 DOCKER_COMMAND = "docker"
 DOCKER_COMPOSE_PROJECT_NAME = "dazel"
 
+CONTAINER_OUTPUT_USER_ROOT = "/var/bazel/workspace/_bazel_dazel"
 CONTAINER_BAZEL_BIN = "/usr/bin/bazel"
 
 DEFAULT_PORTS = []
@@ -91,7 +103,6 @@ class DockerInstance:
             "--output_user_root=%s" % CONTAINER_OUTPUT_USER_ROOT,
             "--output_base=%s" % CONTAINER_OUTPUT_BASE
             '"%s"' % '" "'.join(args))
-        print("Running command: %s" % command)
         return os.WEXITSTATUS(os.system(command))
 
 
@@ -108,7 +119,6 @@ class DockerInstance:
 
 
     def _run_silent_command(self, command):
-        print("SILENT: %s" % command)
         return subprocess.call(command, stdout=sys.stderr, shell=True)
 
 
