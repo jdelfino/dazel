@@ -47,13 +47,10 @@ logging.basicConfig(level="INFO")
 logger = logging.getLogger("dazel")
 
 class DockerInstance:
-    """Manages communication and runs commands on associated docker container.
-
-    A DockerInstance can build the image for the container if necessary, run it,
-    set it up through configuration variables, and pass on commands to it.
-    It streams the output directly and blocks until the command finishes.
     """
-
+    Handles configuring and launching the docker compose stack, and sending commands to the build
+    container.
+    """
     def __init__(self, workspace_root,
                        ports, env_vars,
                        docker_compose_file,
@@ -210,8 +207,7 @@ class DockerInstance:
         This is done by traversing the directory structure from the given dazel
         directory until we find the WORKSPACE file.
         """
-        directory = os.path.realpath(os.environ.get(
-                "DAZEL_DIRECTORY", DEFAULT_DIRECTORY))
+        directory = os.path.realpath(os.cwd())
         while (directory and directory != "/" and
                not os.path.exists(os.path.join(directory, BAZEL_WORKSPACE_FILE))):
             directory = os.path.dirname(directory)
