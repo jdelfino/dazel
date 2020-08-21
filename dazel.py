@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import collections
+from collections.abc import Iterable
 
 ### IMPORTANT: These next values must be used in the docker compose file.
 
@@ -15,8 +16,8 @@ import collections
 
 # The container mount point for the repo being built. The build container must mount to this location.
 CODE_MOUNT_POINT = "/code"
-# The container's output base. The container must mount `external`, `execroot`, and `action_cache`
-# under this directory.
+# The container's output base. The container must mount this directory for build results to be
+# available outside of the container.
 CONTAINER_OUTPUT_BASE = "/root/.cache/bazel/_bazel_dazel"
 # The docker-compose file must set the `container_name` for the bazel container to this value.
 BUILD_CONTAINER_NAME = "dazel_build"
@@ -96,10 +97,11 @@ class DockerInstance:
             BUILD_CONTAINER_NAME,
             CONTAINER_BAZEL_BIN,
             ("--bazelrc=%s/%s" % (CODE_MOUNT_POINT, self.bazel_rc_file)
-             if self.bazel_rc_file and self.command else ""),
+             if self.bazel_rc_file else ""),
             "--output_user_root=%s" % CONTAINER_OUTPUT_USER_ROOT,
-            "--output_base=%s" % CONTAINER_OUTPUT_BASE
+            "--output_base=%s" % CONTAINER_OUTPUT_BASE,
             '"%s"' % '" "'.join(args))
+        logger.debug("Sending command: %s", command)
         return os.WEXITSTATUS(os.system(command))
 
 
@@ -116,6 +118,7 @@ class DockerInstance:
 
 
     def _run_silent_command(self, command):
+        logger.debug("Running silent command: %s", command)
         return subprocess.call(command, stdout=sys.stderr, shell=True)
 
 
@@ -124,7 +127,7 @@ class DockerInstance:
         if not self.docker_compose_file:
             return 0
 
-        command = "COMPOSE_PROJECT_NAME=%s docker-compose -f %s up -d" % (
+        command = "COMPOSE_PROJECT_NAME=%s docker-compose -f %s up -d --remove-orphans" % (
             DOCKER_COMPOSE_PROJECT_NAME, os.path.join(self.workspace_root, self.docker_compose_file))
         return self._run_silent_command(command)
 
@@ -139,7 +142,7 @@ class DockerInstance:
         # DAZEL_PORTS can be a python iterable or a comma-separated string.
         if isinstance(ports, str):
             ports = [p.strip() for p in ports.split(",")]
-        elif ports and not isinstance(ports, collections.Iterable):
+        elif ports and not isinstance(ports, Iterable):
             raise RuntimeError("DAZEL_PORTS must be comma-separated string "
                                "or python iterable of strings")
 
@@ -157,7 +160,7 @@ class DockerInstance:
         # DAZEL_ENV_VARS can be a python iterable or a comma-separated string.
         if isinstance(env_vars, str):
             env_vars = [p.strip() for p in env_vars.split(",")]
-        elif env_vars and not isinstance(env_vars, collections.Iterable):
+        elif env_vars and not isinstance(env_vars, Iterable):
             raise RuntimeError("DAZEL_ENV_VARS must be comma-separated string "
                                "or python iterable of strings")
 
@@ -207,7 +210,7 @@ class DockerInstance:
         This is done by traversing the directory structure from the given dazel
         directory until we find the WORKSPACE file.
         """
-        directory = os.path.realpath(os.cwd())
+        directory = os.path.realpath(os.getcwd())
         while (directory and directory != "/" and
                not os.path.exists(os.path.join(directory, BAZEL_WORKSPACE_FILE))):
             directory = os.path.dirname(directory)
