@@ -70,6 +70,7 @@ class DockerInstance:
     def from_config(cls):
         config = cls._config_from_file()
         config.update(cls._config_from_environment())
+        logger.setLevel(config.get("DAZEL_LOG_LEVEL", "INFO"))
         return DockerInstance(
                 workspace_root=config.get("DAZEL_WORKSPACE_ROOT", None),
                 ports=config.get("DAZEL_PORTS", DEFAULT_PORTS),
