@@ -43,7 +43,7 @@ DEFAULT_BAZEL_RC_FILE = ""
 DEFAULT_DOCKER_RUN_PRIVILEGED = False
 
 
-logging.basicConfig(level="DEBUG")
+logging.basicConfig(level="INFO")
 logger = logging.getLogger("dazel")
 
 class DockerInstance:
