@@ -5,6 +5,7 @@ import shutil
 import subprocess
 import sys
 import collections
+from collections.abc import Iterable
 
 ### IMPORTANT: These next values must be used in the docker compose file.
 
@@ -141,7 +142,7 @@ class DockerInstance:
         # DAZEL_PORTS can be a python iterable or a comma-separated string.
         if isinstance(ports, str):
             ports = [p.strip() for p in ports.split(",")]
-        elif ports and not isinstance(ports, collections.Iterable):
+        elif ports and not isinstance(ports, Iterable):
             raise RuntimeError("DAZEL_PORTS must be comma-separated string "
                                "or python iterable of strings")
 
@@ -159,7 +160,7 @@ class DockerInstance:
         # DAZEL_ENV_VARS can be a python iterable or a comma-separated string.
         if isinstance(env_vars, str):
             env_vars = [p.strip() for p in env_vars.split(",")]
-        elif env_vars and not isinstance(env_vars, collections.Iterable):
+        elif env_vars and not isinstance(env_vars, Iterable):
             raise RuntimeError("DAZEL_ENV_VARS must be comma-separated string "
                                "or python iterable of strings")
 

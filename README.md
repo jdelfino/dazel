@@ -73,7 +73,5 @@ services:
     tty: true
     volumes:
       - .:/code
-      - ~/.cache/bazel/_bazel_dazel/external:/root/.cache/bazel/_bazel_dazel/external:delegated
-      - ~/.cache/bazel/_bazel_dazel/execroot:/root/.cache/bazel/_bazel_dazel/execroot:delegated
-      - ~/.cache/bazel/_bazel_dazel/action_cache:/root/.cache/bazel/_bazel_dazel/action_cache:delegated
+      - ~/.cache/bazel/_bazel_dazel:/root/.cache/bazel/_bazel_dazel:delegated
 ```
